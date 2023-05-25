@@ -34,7 +34,6 @@ dbConfig.connect((err) => {
 //ViewAllDrugs
 app.get("/allDrugs", (req, res) => {
   let sql = `SELECT * FROM drugs  `;
-
   dbConfig.query(sql, (err, rows) => {
     if (err) {
       console.log(err);
@@ -46,14 +45,13 @@ app.get("/allDrugs", (req, res) => {
 });
 //SerarchAllDrugs InsideBody
 app.get("/searchDrugs", (req, res) => {
-  const searchTerm = req.body.item;
+  let searchTerm = req.body.item;
+
   let sql = `SELECT * FROM drugs WHERE d_name LIKE '${searchTerm}%' OR d_brand LIKE '${searchTerm}%' `;
 
   dbConfig.query(sql, (err, rows) => {
     if (err) {
       console.log(err);
-      // res.json("There is no such kind of Drug name or brand");
-      res.json("Error");
       throw err;
     } else {
       if (rows && rows.length > 0) {
@@ -68,16 +66,27 @@ app.get("/searchDrugs", (req, res) => {
 //Insert Drugs
 app.post("/addDrugs", (req, res) => {
   const { d_name, d_brand } = req.body;
-  const sql = `INSERT INTO drugs (d_name, d_brand) VALUES ('${d_name}','${d_brand}')`;
 
-  dbConfig.query(sql, (error, results) => {
-    if (error) {
-      console.error(error);
-      res
-        .status(500)
-        .json({ error: "Failed to insert data into the database." });
+  let check = `SELECT * FROM drugs WHERE d_name = '${d_name}' AND d_brand = '${d_brand}'`;
+  let sql = `INSERT INTO drugs (d_name, d_brand) VALUES ('${d_name}','${d_brand}')`;
+  dbConfig.query(check, (err, rows) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ error: "Internal Server Error " });
+    }
+    if (rows.length > 0) {
+      return res.status(409).json({ error: "Drug already exists" });
     } else {
-      res.status(200).json({ message: "Data inserted successfully." });
+      // If the drug does not exist, insert it into the database
+      dbConfig.query(sql, (err) => {
+        if (err) {
+          console.log(err);
+          return res
+            .status(500)
+            .json({ error: "Failed to insert data into the database" });
+        }
+        return res.status(201).json({ message: "Drug inserted successfully" });
+      });
     }
   });
 });
