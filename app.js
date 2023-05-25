@@ -29,7 +29,6 @@ dbConfig.connect((err) => {
 
 //ViewAllDrugs
 app.get("/allDrugs", (req, res) => {
-  const searchTerm = req.query.item;
   let sql = `SELECT * FROM drugs  `;
 
   dbConfig.query(sql, (err, rows) => {
@@ -43,7 +42,7 @@ app.get("/allDrugs", (req, res) => {
 });
 //SerarchAllDrugs
 app.get("/searchDrugs", (req, res) => {
-  const searchTerm = req.query.term;
+  const searchTerm = req.query.item;
   let sql = `SELECT * FROM drugs WHERE d_name LIKE '${searchTerm}%' OR d_brand LIKE '${searchTerm}%' `;
 
   dbConfig.query(sql, (err, rows) => {
