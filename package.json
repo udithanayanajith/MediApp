@@ -9,6 +9,9 @@
   },
   "author": "Uditha",
   "license": "ISC",
+  "bin": {
+    "execute": "app.js"
+  },
   "dependencies": {
     "express": "^4.18.2",
     "mysql": "^2.18.1",
