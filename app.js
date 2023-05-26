@@ -22,6 +22,7 @@ const dbConfig = mysql.createConnection({
   user: "sql9621204",
   password: "eMxsvJk2lv",
 });
+
 dbConfig.connect((err) => {
   if (err) {
     console.log(err);
@@ -43,6 +44,7 @@ app.get("/allDrugs", (req, res) => {
     }
   });
 });
+
 //SerarchAllDrugs InsideBody
 app.get("/searchDrugs", (req, res) => {
   let searchTerm = req.body.item;
@@ -86,6 +88,35 @@ app.post("/addDrugs", (req, res) => {
             .json({ error: "Failed to insert data into the database" });
         }
         return res.status(201).json({ message: "Drug inserted successfully" });
+      });
+    }
+  });
+});
+
+//UpdateDrug
+app.post("/updateDrug", (req, res) => {
+  // const drugId = req.params.id; // Get the drug ID from the route parameter
+  const { id, d_name, d_brand } = req.body; // Get the updated values from the request body
+  let check = `SELECT * FROM drugs WHERE d_name = '${d_name}' AND d_brand = '${d_brand}'`;
+  let sql = `UPDATE drugs SET d_name = '${d_name}', d_brand = '${d_brand}' WHERE id = '${id}' `;
+
+  dbConfig.query(check, (err, rows) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ error: "Internal Server Error " });
+    }
+    if (rows.length > 0) {
+      return res.status(409).json({ error: "Drug already exists" });
+    } else {
+      // If the drug does not exist, Update it into the database
+      dbConfig.query(sql, (err, result) => {
+        if (err) {
+          console.log(err);
+          return res
+            .status(500)
+            .json({ error: "Failed to Update data into the database" });
+        }
+        return res.status(201).json({ message: "Drug Updated successfully" });
       });
     }
   });
