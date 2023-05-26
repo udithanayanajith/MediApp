@@ -6,22 +6,22 @@ const port = 3000;
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
 app.use(express.json());
-
+// app.use(bodyParser.urlencoded({ extended: true }));
 // Local Connection
-// const dbConfig = mysql.createConnection({
-//   host: "localhost",
-//   database: "medi",
-//   user: "root",
-//   password: "",
-// });
+const dbConfig = mysql.createConnection({
+  host: "localhost",
+  database: "medi",
+  user: "root",
+  password: "",
+});
 
 // Hosted Connection
-const dbConfig = mysql.createConnection({
-  host: "sql9.freesqldatabase.com",
-  database: "sql9621204",
-  user: "sql9621204",
-  password: "eMxsvJk2lv",
-});
+// const dbConfig = mysql.createConnection({
+//   host: "sql9.freesqldatabase.com",
+//   database: "sql9621204",
+//   user: "sql9621204",
+//   password: "eMxsvJk2lv",
+// });
 
 dbConfig.connect((err) => {
   if (err) {
@@ -119,6 +119,29 @@ app.post("/updateDrug", (req, res) => {
         return res.status(201).json({ message: "Drug Updated successfully" });
       });
     }
+  });
+});
+
+//Delete
+app.delete("/deleteDrug", (req, res) => {
+  const id = req.query.id;
+
+  if (!id) {
+    res.status(400).json({ error: "Drug ID is missing in the request query." });
+    return;
+  }
+
+  let sql = `DELETE FROM drugs WHERE id=${id}`;
+  dbConfig.query(sql, (err, results) => {
+    if (err) {
+      console.error("Error deleting drug:", err);
+      return res.status(500).json({ err: "Error deleting drug" });
+    }
+
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ err: "Drug not found" });
+    }
+    res.json({ message: "Drug deleted successfully" });
   });
 });
 
