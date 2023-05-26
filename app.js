@@ -8,20 +8,20 @@ app.use(bodyParser.json());
 app.use(express.json());
 // app.use(bodyParser.urlencoded({ extended: true }));
 // Local Connection
-const dbConfig = mysql.createConnection({
-  host: "localhost",
-  database: "medi",
-  user: "root",
-  password: "",
-});
+// const dbConfig = mysql.createConnection({
+//   host: "localhost",
+//   database: "medi",
+//   user: "root",
+//   password: "",
+// });
 
 // Hosted Connection
-// const dbConfig = mysql.createConnection({
-//   host: "sql9.freesqldatabase.com",
-//   database: "sql9621204",
-//   user: "sql9621204",
-//   password: "eMxsvJk2lv",
-// });
+const dbConfig = mysql.createConnection({
+  host: "sql9.freesqldatabase.com",
+  database: "sql9621204",
+  user: "sql9621204",
+  password: "eMxsvJk2lv",
+});
 
 dbConfig.connect((err) => {
   if (err) {
@@ -94,11 +94,12 @@ app.post("/addDrugs", (req, res) => {
 });
 
 //UpdateDrug
-app.post("/updateDrug", (req, res) => {
+app.put("/updateDrug", (req, res) => {
   // const drugId = req.params.id; // Get the drug ID from the route parameter
   const { id, d_name, d_brand } = req.body; // Get the updated values from the request body
   let check = `SELECT * FROM drugs WHERE d_name = '${d_name}' AND d_brand = '${d_brand}'`;
   let sql = `UPDATE drugs SET d_name = '${d_name}', d_brand = '${d_brand}' WHERE id = '${id}' `;
+  let idCheck = `SELECT id FROM drugs WHERE id = '${id}' `;
 
   dbConfig.query(check, (err, rows) => {
     if (err) {
@@ -108,15 +109,27 @@ app.post("/updateDrug", (req, res) => {
     if (rows.length > 0) {
       return res.status(409).json({ error: "Drug already exists" });
     } else {
-      // If the drug does not exist, Update it into the database
-      dbConfig.query(sql, (err, result) => {
+      dbConfig.query(idCheck, (err, idRes) => {
         if (err) {
-          console.log(err);
-          return res
-            .status(500)
-            .json({ error: "Failed to Update data into the database" });
+          return res.status(500).json({ error: "Internal Server Error " });
         }
-        return res.status(201).json({ message: "Drug Updated successfully" });
+
+        if (idRes.length == 0) {
+          return res.status(409).json({ error: "Wrong ID " + id });
+        } else {
+          // If the drug does not exist, Update it into the database
+          dbConfig.query(sql, (err, result) => {
+            if (err) {
+              console.log(err);
+              return res
+                .status(500)
+                .json({ error: "Failed to Update data into the database" });
+            }
+            return res
+              .status(201)
+              .json({ message: "Drug Updated successfully" });
+          });
+        }
       });
     }
   });
