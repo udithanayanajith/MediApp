@@ -12,15 +12,6 @@ const router = require("./routes/routes");
 
 app.use("/api", router);
 
-// Hosted Connection
-// const dbConfig = mysql.createConnection({
-
-// });
-
-
-
-//Login
-
 //ViewAllDrugs
 app.get("/allDrugs", (req, res) => {
   let sql = `SELECT * FROM drugs  `;

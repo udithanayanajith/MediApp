@@ -1,109 +1,70 @@
 const express = require("express");
 const router = express.Router();
-
 const bcrypt = require("bcryptjs");
-const uuid = require("uuid");
 const jwt = require("jsonwebtoken");
+const uuid = require("uuid");
 
-const db = require("../lib/db.js");
-const userMiddleware = require("../middleware/users.js");
+const connection = require("../lib/db.js");
 
-// routes/router.js
+// http://localhost:3000/api/signup
+router.post("/signup", (req, res) => {
+  const { username, password } = req.body;
 
-router.post("/sign-up", userMiddleware.validateRegister, (req, res, next) => {
-  db.query(
-    "SELECT id FROM users WHERE LOWER(username) = LOWER(?)",
-    [req.body.username],
-    (err, result) => {
-      if (result && result.length) {
-        // error
-        return res.status(409).send({
-          message: "This username is already in use!",
-        });
-      } else {
-        // username not in use
-        bcrypt.hash(req.body.password, 10, (err, hash) => {
-          if (err) {
-            return res.status(500).send({
-              message: err,
-            });
-          } else {
-            db.query(
-              "INSERT INTO users (id, username, password, registered) VALUES (?, ?, ?, now());",
-              [uuid.v4(), req.body.username, hash],
-              (err, result) => {
-                if (err) {
-                  return res.status(400).send({
-                    message: err,
-                  });
-                }
-                return res.status(201).send({
-                  message: "Registered!",
-                });
-              }
-            );
-          }
-        });
-      }
-    }
-  );
-});
+  // Hash the password
+  //   bcrypt.hash(password, 10, (err, hash) => {
+  //     if (err) {
+  //       return res.status(500).json({ error: err.message });
+  //     }
 
-router.post("/login", (req, res, next) => {
-  db.query(
-    `SELECT * FROM users WHERE username = ?;`,
-    [req.body.username],
-    (err, result) => {
+  // Store the user in the database
+  connection.query(
+    "INSERT INTO users (username, password) VALUES (?, ?)",
+    [username, password],
+    (err) => {
       if (err) {
-        return res.status(400).send({
-          message: err,
-        });
+        return res.status(500).json({ error: err.message });
       }
-      if (!result.length) {
-        return res.status(400).send({
-          message: "Username or password incorrect!",
-        });
-      }
-
-      bcrypt.compare(
-        req.body.password,
-        result[0]["password"],
-        (bErr, bResult) => {
-          if (bErr) {
-            return res.status(400).send({
-              message: "Username or password incorrect!",
-            });
-          }
-          if (bResult) {
-            // password match
-            const token = jwt.sign(
-              {
-                username: result[0].username,
-                userId: result[0].id,
-              },
-              "SECRETKEY",
-              { expiresIn: "7d" }
-            );
-            db.query(`UPDATE users SET last_login = now() WHERE id = ?;`, [
-              result[0].id,
-            ]);
-            return res.status(200).send({
-              message: "Logged in!",
-              token,
-              user: result[0],
-            });
-          }
-          return res.status(400).send({
-            message: "Username or password incorrect!",
-          });
-        }
-      );
+      res.json({ message: "User registered successfully" });
     }
   );
+  //   });
 });
 
-router.get("/secret-route", (req, res, next) => {
-  res.send("This is the secret content. Only logged in users can see that!");
+// Login endpoint
+router.post("/login", (req, res) => {
+  const { username, password } = req.body;
+
+  // Find the user in the database
+  connection.query(
+    "SELECT * FROM users WHERE username = ?",
+    [username],
+    (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+
+      // Check if user exists
+      if (results.length === 0) {
+        return res
+          .status(401)
+          .json({ error: "Authentication failed user exists" });
+      }
+
+      // Compare passwords
+      if (password === results[0].password) {
+        // Generate and return the JWT token
+        const token = jwt.sign(
+          { username: results[0].username },
+          "secret", // Replace with your own secret key
+          { expiresIn: "1h" }
+        );
+
+        res.json({ token });
+      } else {
+        res.status(401).json({ error: "Authentication failed" });
+      }
+    }
+  );
 });
 
 module.exports = router;
