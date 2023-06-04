@@ -86,7 +86,7 @@ app.get("/searchDrugs", (req, res) => {
 app.post("/addDrugs", (req, res) => {
   const { d_name, d_brand } = req.body;
 
-  if (!d_name == null) {
+  if (d_name) {
     let check = `SELECT * FROM drugs WHERE d_name = '${d_name}' AND d_brand = '${d_brand}'`;
     let sql = `INSERT INTO drugs (d_name, d_brand) VALUES ('${d_name}','${d_brand}')`;
     dbConfig.query(check, (err, rows) => {
