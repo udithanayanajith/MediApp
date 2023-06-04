@@ -47,8 +47,18 @@ router.post("/login", (req, res) => {
       if (results.length === 0) {
         return res
           .status(401)
-          .json({ error: "Authentication failed user exists" });
+          .json({ message: "Authentication failed user exists" });
       }
+
+      //
+      //   bcrypt.compare(password, results[0].password, (err, match) => {
+      //     if (err) {
+      //       return res.status(500).json({ error: err.message });
+      //     }
+
+      //     if (!match) {
+      //       return res.status(401).json({ error: 'Authentication failed' });
+      //     }
 
       // Compare passwords
       if (password === results[0].password) {
@@ -61,7 +71,7 @@ router.post("/login", (req, res) => {
 
         res.json({ token });
       } else {
-        res.status(401).json({ error: "Authentication failed" });
+        res.status(401).json({ message: "Authentication failed" });
       }
     }
   );
