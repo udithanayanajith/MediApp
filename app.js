@@ -113,8 +113,8 @@ app.post("/addDrugs", (req, res) => {
     });
   } else {
     return res
-      .status(500)
-      .json({ error: "Failed to insert data,Required Drug Name " });
+      .status(400)
+      .json({ message: "Failed to insert data,Genetic Drug Name " });
   }
 });
 
