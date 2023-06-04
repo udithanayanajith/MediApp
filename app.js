@@ -86,28 +86,32 @@ app.get("/searchDrugs", (req, res) => {
 app.post("/addDrugs", (req, res) => {
   const { d_name, d_brand } = req.body;
 
-  let check = `SELECT * FROM drugs WHERE d_name = '${d_name}' AND d_brand = '${d_brand}'`;
-  let sql = `INSERT INTO drugs (d_name, d_brand) VALUES ('${d_name}','${d_brand}')`;
-  dbConfig.query(check, (err, rows) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).json({ error: "Internal Server Error " });
-    }
-    if (rows.length > 0) {
-      return res.status(409).json({ error: "Drug already exists" });
-    } else {
-      // If the drug does not exist, insert it into the database
-      dbConfig.query(sql, (err) => {
-        if (err) {
-          console.log(err);
+  if (!d_name == null) {
+    let check = `SELECT * FROM drugs WHERE d_name = '${d_name}' AND d_brand = '${d_brand}'`;
+    let sql = `INSERT INTO drugs (d_name, d_brand) VALUES ('${d_name}','${d_brand}')`;
+    dbConfig.query(check, (err, rows) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Internal Server Error " });
+      }
+      if (rows.length > 0) {
+        return res.status(409).json({ error: "Drug already exists" });
+      } else {
+        // If the drug does not exist, insert it into the database
+        dbConfig.query(sql, (err) => {
+          if (err) {
+            console.log(err);
+            return res
+              .status(500)
+              .json({ error: "Failed to insert data into the database" });
+          }
           return res
-            .status(500)
-            .json({ error: "Failed to insert data into the database" });
-        }
-        return res.status(201).json({ message: "Drug inserted successfully" });
-      });
-    }
-  });
+            .status(201)
+            .json({ message: "Drug inserted successfully" });
+        });
+      }
+    });
+  }
 });
 
 //UpdateDrug
