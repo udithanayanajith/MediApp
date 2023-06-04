@@ -7,31 +7,19 @@ const bodyParser = require("body-parser");
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
-// app.use(bodyParser.urlencoded({ extended: true }));
-// Local Connection
-// const dbConfig = mysql.createConnection({
-//   host: "localhost",
-//   database: "medi",
-//   user: "root",
-//   password: "",
-// });
+const dbConfig = require("./lib/db");
+const router = require("./routes/routes");
+
+app.use("/api", router);
 
 // Hosted Connection
-const dbConfig = mysql.createConnection({
-  host: "db4free.net",
-  database: "sql9621204",
-  user: "sql9621204",
-  password: "eMxsvJk2lv",
-});
+// const dbConfig = mysql.createConnection({
 
-dbConfig.connect((err) => {
-  if (err) {
-    console.log(err);
-    throw err;
-  } else {
-    console.log("Database Connected");
-  }
-});
+// });
+
+
+
+//Login
 
 //ViewAllDrugs
 app.get("/allDrugs", (req, res) => {
@@ -66,7 +54,7 @@ app.get("/allOptions", (req, res) => {
 app.get("/searchDrugs", (req, res) => {
   let searchTerm = req.query.item;
 
-  let sql = `SELECT * FROM drugs WHERE d_name LIKE '${searchTerm}' OR d_brand LIKE '${searchTerm}' `;
+  let sql = `SELECT * FROM drugs WHERE d_name = '${searchTerm}' OR d_brand = '${searchTerm}' `;
 
   dbConfig.query(sql, (err, rows) => {
     if (err) {
@@ -95,7 +83,7 @@ app.post("/addDrugs", (req, res) => {
         return res.status(500).json({ error: "Internal Server Error " });
       }
       if (rows.length > 0) {
-        return res.status(409).json({ error: "Drug already exists" });
+        return res.status(422).json({ error: "Drug already exists" });
       } else {
         // If the drug does not exist, insert it into the database
         dbConfig.query(sql, (err) => {
