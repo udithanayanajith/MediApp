@@ -46,6 +46,22 @@ app.get("/allDrugs", (req, res) => {
   });
 });
 
+//ViewAllDrugs
+app.get("/allOptions", (req, res) => {
+  const jsonResponse = { options: [] };
+  let disName = `SELECT  DISTINCT d_name FROM  drugs  `;
+  let disBrand = `SELECT  DISTINCT d_brand FROM  drugs  `;
+  dbConfig.query(disName, (error, results1) => {
+    if (error) throw error;
+    jsonResponse.options = jsonResponse.options.concat(results1);
+    dbConfig.query(disBrand, (error, results2) => {
+      if (error) throw error;
+      jsonResponse.options = jsonResponse.options.concat(results2);
+      res.json(jsonResponse);
+    });
+  });
+});
+
 //SerarchAllDrugs InsideBody
 app.get("/searchDrugs", (req, res) => {
   let searchTerm = req.body.item;
