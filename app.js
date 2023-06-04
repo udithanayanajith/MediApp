@@ -64,7 +64,7 @@ app.get("/allOptions", (req, res) => {
 
 //SerarchAllDrugs InsideBody
 app.get("/searchDrugs", (req, res) => {
-  let searchTerm = req.body.item;
+  let searchTerm = req.query.item;
 
   let sql = `SELECT * FROM drugs WHERE d_name LIKE '${searchTerm}%' OR d_brand LIKE '${searchTerm}%' `;
 
