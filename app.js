@@ -17,7 +17,7 @@ app.use(express.json());
 
 // Hosted Connection
 const dbConfig = mysql.createConnection({
-  host: "sql9.freesqldatabase.com",
+  host: "db4free.net",
   database: "sql9621204",
   user: "sql9621204",
   password: "eMxsvJk2lv",
