@@ -66,7 +66,7 @@ app.get("/allOptions", (req, res) => {
 app.get("/searchDrugs", (req, res) => {
   let searchTerm = req.query.item;
 
-  let sql = `SELECT * FROM drugs WHERE d_name LIKE '${searchTerm}%' OR d_brand LIKE '${searchTerm}%' `;
+  let sql = `SELECT * FROM drugs WHERE d_name LIKE '${searchTerm}' OR d_brand LIKE '${searchTerm}' `;
 
   dbConfig.query(sql, (err, rows) => {
     if (err) {
