@@ -16,6 +16,8 @@ const userModel = require("./model/users");
 app.use("/api", router);
 mDbConfig();
 //Check JWT
+
+//////////////////////////Mongo DB
 const verifyToken = (req, res, next) => {
   const token = req.headers.authorization;
 
