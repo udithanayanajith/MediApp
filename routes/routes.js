@@ -1,79 +1,61 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const uuid = require("uuid");
+const bodyParser = require("body-parser");
+router.use(bodyParser.urlencoded({ extended: false }));
+router.use(bodyParser.json());
 
-const connection = require("../lib/db.js");
-router.post("/signup", (req, res) => {
-  const { username, password } = req.body;
+const userModel = require("../model/users.js");
 
-  // Hash the password
-  //   bcrypt.hash(password, 10, (err, hash) => {
-  //     if (err) {
-  //       return res.status(500).json({ error: err.message });
-  //     }
-
-  // Store the user in the database
-  connection.query(
-    "INSERT INTO users (username, password) VALUES (?, ?)",
-    [username, password],
-    (err) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      res.json({ message: "User registered successfully" });
+router.post("/signup", async (req, res) => {
+  try {
+    const data = {
+      username: req.body.username,
+      password: req.body.password,
+    };
+    //finds if already user
+    const existingUname = await userModel.findOne({
+      username: req.body.username,
+    });
+    if (existingUname) {
+      return res.status(400).json({ message: "This user already registered" });
     }
-  );
-  //   });
+
+    await userModel.insertMany([data]);
+    return res.status(201).json({ message: "User registred successfully" });
+  } catch (err) {
+    return res.status(500).json({ message: "Internal Error" });
+  }
 });
 
-// Login endpoint
-router.post("/login", (req, res) => {
-  const { username, password } = req.body;
+//Login
 
-  // Find the user in the database
-  connection.query(
-    "SELECT * FROM users WHERE username = ?",
-    [username],
-    (err, results) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
+router.get("/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
 
-      // Check if user exists
-      if (results.length === 0) {
-        return res
-          .status(401)
-          .json({ message: "Authentication failed user exists" });
-      }
-
-      //
-      //   bcrypt.compare(password, results[0].password, (err, match) => {
-      //     if (err) {
-      //       return res.status(500).json({ error: err.message });
-      //     }
-
-      //     if (!match) {
-      //       return res.status(401).json({ error: 'Authentication failed' });
-      //     }
-
-      // Compare passwords
-      if (password === results[0].password) {
-        // Generate and return the JWT token
-        const token = jwt.sign(
-          { username: results[0].username },
-          "secret", // Replace with your own secret key
-          { expiresIn: "1h" }
-        );
-        // setToken();
-
-        res.json({ token });
-      } else {
-        res.status(401).json({ message: "Authentication failed" });
-      }
+    const user = await userModel.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-  );
+
+    if (!password) {
+      return res
+        .status(401)
+        .json({ message: "Authentication failed: Invalid password" });
+    } else {
+      const token = jwt.sign(
+        { username: user.username },
+        "secret", // Replace with your own secret key
+        { expiresIn: "1h" }
+      );
+
+      return res.json({ token });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Error" });
+  }
 });
 
 module.exports = router;

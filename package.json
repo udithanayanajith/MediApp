@@ -4,7 +4,7 @@
   "description": "Medi App",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js",
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Uditha",
@@ -13,12 +13,12 @@
     "execute": "app.js"
   },
   "dependencies": {
-    "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
-    "mysql": "^2.18.1",
+    "mongodb": "^5.6.0",
+    "mongoose": "^7.2.2",
     "nodemon": "^2.0.22",
     "uuid": "^9.0.0"
   }
