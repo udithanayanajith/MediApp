@@ -5,8 +5,6 @@ const jwt = require("jsonwebtoken");
 const uuid = require("uuid");
 
 const connection = require("../lib/db.js");
-
-// http://localhost:3000/api/signup
 router.post("/signup", (req, res) => {
   const { username, password } = req.body;
 
@@ -68,6 +66,7 @@ router.post("/login", (req, res) => {
           "secret", // Replace with your own secret key
           { expiresIn: "1h" }
         );
+        // setToken();
 
         res.json({ token });
       } else {

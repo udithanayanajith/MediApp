@@ -1,5 +1,4 @@
 const express = require("express");
-const mysql = require("mysql");
 const app = express();
 const port = 3000;
 const cors = require("cors");
@@ -9,8 +8,27 @@ app.use(bodyParser.json());
 app.use(express.json());
 const dbConfig = require("./lib/db");
 const router = require("./routes/routes");
+const jwt = require("jsonwebtoken");
 
 app.use("/api", router);
+
+//Check JWT
+const verifyToken = (req, res, next) => {
+  const token = req.headers.authorization;
+
+  if (!token) {
+    return res.status(409).json({ message: "No token provided" });
+  }
+
+  jwt.verify(token, "secret", (err, decoded) => {
+    if (err) {
+      return res.status(409).json({ message: "Failed to authenticate token" });
+    }
+
+    req.username = decoded.username;
+    next();
+  });
+};
 
 //ViewAllDrugs
 app.get("/allDrugs", (req, res) => {
@@ -62,38 +80,72 @@ app.get("/searchDrugs", (req, res) => {
 });
 
 //Insert Drugs
-app.post("/addDrugs", (req, res) => {
+app.post("/addDrugs", verifyToken, (req, res) => {
   const { d_name, d_brand } = req.body;
+  const Tokenusername = req.username;
 
-  if (d_name) {
-    let check = `SELECT * FROM drugs WHERE d_name = '${d_name}' AND d_brand = '${d_brand}'`;
-    let sql = `INSERT INTO drugs (d_name, d_brand) VALUES ('${d_name}','${d_brand}')`;
-    dbConfig.query(check, (err, rows) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json({ error: "Internal Server Error " });
-      }
-      if (rows.length > 0) {
-        return res.status(422).json({ error: "Drug already exists" });
-      } else {
-        // If the drug does not exist, insert it into the database
-        dbConfig.query(sql, (err) => {
-          if (err) {
-            console.log(err);
-            return res
-              .status(500)
-              .json({ error: "Failed to insert data into the database" });
-          }
-          return res
-            .status(201)
-            .json({ message: "Drug inserted successfully" });
-        });
-      }
-    });
-  } else {
+  const token = req.headers.authorization;
+  if (!token) {
     return res
-      .status(400)
-      .json({ message: "Failed to insert data,Genetic Drug Name " });
+      .status(409)
+      .json({ message: "Authentication failed: Token missing" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, "secret");
+    const { username } = decoded;
+    dbConfig.query(
+      "SELECT * FROM users WHERE username = ?",
+      [username],
+      (err, results) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        if (results.length === 0) {
+          return res
+            .status(401)
+            .json({ message: "Authentication failed: User not found" });
+        }
+
+        //end jwt verifications
+
+        //query implementation started
+        if (d_name) {
+          let check = `SELECT * FROM drugs WHERE d_name = '${d_name}' AND d_brand = '${d_brand}'`;
+          let sql = `INSERT INTO drugs (d_name, d_brand) VALUES ('${d_name}','${d_brand}')`;
+          dbConfig.query(check, (err, rows) => {
+            if (err) {
+              console.log(err);
+              return res.status(500).json({ error: "Internal Server Error " });
+            }
+            if (rows.length > 0) {
+              return res.status(422).json({ error: "Drug already exists" });
+            } else {
+              // If the drug does not exist, insert it into the database
+              dbConfig.query(sql, (err) => {
+                if (err) {
+                  console.log(err);
+                  return res
+                    .status(500)
+                    .json({ error: "Failed to insert data into the database" });
+                }
+                return res.status(201).json({
+                  message:
+                    "Drug inserted successfully from user: " + Tokenusername,
+                });
+              });
+            }
+          });
+        } else {
+          return res
+            .status(400)
+            .json({ message: "Failed to insert data,Genetic Drug Name " });
+        }
+        //end query implementation
+      }
+    );
+  } catch (err) {
+    res.status(401).json({ message: "Authentication failed: Invalid token" });
   }
 });
 
@@ -138,14 +190,14 @@ app.put("/updateDrug", (req, res) => {
     }
   });
 });
-
 //Delete
-app.delete("/deleteDrug", (req, res) => {
+app.delete("/deleteDrug", verifyToken, (req, res) => {
   const id = req.query.id;
-
+  const Tokenusername = req.username;
   if (!id) {
-    res.status(400).json({ error: "Drug ID is missing in the request query." });
-    return;
+    return res
+      .status(400)
+      .json({ error: "Drug ID is missing in the request query." });
   }
 
   let sql = `DELETE FROM drugs WHERE id=${id}`;
@@ -158,7 +210,10 @@ app.delete("/deleteDrug", (req, res) => {
     if (results.affectedRows === 0) {
       return res.status(404).json({ err: "Drug not found" });
     }
-    res.json({ message: "Drug deleted successfully" });
+
+    res.json({
+      message: "Drug deleted successfully by user :" + Tokenusername,
+    });
   });
 });
 
