@@ -7,6 +7,7 @@ router.use(bodyParser.json());
 
 const userModel = require("../model/users.js");
 
+//Sing up
 router.post("/signup", async (req, res) => {
   try {
     const data = {
