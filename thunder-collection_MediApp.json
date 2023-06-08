@@ -1,0 +1,61 @@
+{
+    "client": "Thunder Client",
+    "collectionName": "MediApp",
+    "dateExported": "2023-05-25T22:47:09.786Z",
+    "version": "1.1",
+    "folders": [],
+    "requests": [
+        {
+            "_id": "532bb316-fe0e-4e90-9a49-9a262e54a31b",
+            "colId": "44acfd80-1a59-4498-88e9-1b06efff3ea5",
+            "containerId": "",
+            "name": "Get All Drugs ",
+            "url": "https://orange-wildebeest-hem.cyclic.app/allDrugs",
+            "method": "GET",
+            "sortNum": 10000,
+            "created": "2023-05-25T20:14:26.295Z",
+            "modified": "2023-05-25T20:14:36.585Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "e430c57e-97df-43eb-9eba-f6ee1023e886",
+            "colId": "44acfd80-1a59-4498-88e9-1b06efff3ea5",
+            "containerId": "",
+            "name": "Search Drugs",
+            "url": "https://orange-wildebeest-hem.cyclic.app/searchDrugs",
+            "method": "GET",
+            "sortNum": 20000,
+            "created": "2023-05-25T20:14:55.326Z",
+            "modified": "2023-05-25T20:56:56.673Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"item\":\"s\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "6f343790-0c1a-4aa6-8998-411495c8ae5a",
+            "colId": "44acfd80-1a59-4498-88e9-1b06efff3ea5",
+            "containerId": "",
+            "name": "Add Drugs",
+            "url": "https://orange-wildebeest-hem.cyclic.app/addDrugs",
+            "method": "POST",
+            "sortNum": 30000,
+            "created": "2023-05-25T20:57:15.550Z",
+            "modified": "2023-05-25T21:37:57.080Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\r\n  \"d_name\": \"oop2\",\r\n  \"d_brand\": \"java2\"\r\n}",
+                "form": []
+            },
+            "tests": []
+        }
+    ]
+}
